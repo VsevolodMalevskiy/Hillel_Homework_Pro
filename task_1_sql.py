@@ -1,10 +1,9 @@
 import os
 import sqlite3
+from collections import Counter
 
-from typing import List, Set
 
-
-def execute_query(query_sql: str) -> List:
+def execute_query(query_sql: str):
     '''
     Функция для выполнения запроса
     :param query_sql: запрос
@@ -13,77 +12,73 @@ def execute_query(query_sql: str) -> List:
     db_pass = os.path.join(os.getcwd(), 'chinook.db')
     connection = sqlite3.connect(db_pass)
     cur = connection.cursor()
-    result = cur.execute(query_sql)
+    result = cur.execute(query_sql).fetchall()
+    connection.close()
     return result
 
 
-def unwrapper(records: List) -> None:
-    '''
-    Функция для вывода результата выполнения запроса
-    :param records: список ответа БД
-    '''
-    for record in records:
-        print(*record)
+# Задача 1
+
+def calculation_sum():
+    request_1 = """
+      SELECT UnitPrice, Quantity
+        FROM invoice_items;
+    """
+
+    rows_1 = execute_query(request_1)
+
+    summa = 0
+    for row in rows_1:
+        summa += row[0] * row[1]
+    print("\n#1 task")
+    print(f"Общая прибыль по таблице Invoice_items = {'%.2f' % summa}\n")
 
 
-def get_employees() -> None:
-    '''
-    Возвращает список
-    '''
-    query_sql = f'''
-        SELECT *
-          FROM employees
-    '''
-    return unwrapper(execute_query(query_sql))
+def calculation_sum_sql():
+    request_1_sql = """
+    SELECT SUM(UnitPrice*Quantity)
+      FROM invoice_items;
+    """
+
+    rows_1_sql = execute_query(request_1_sql)
+
+    print("#1 task (SQL)")
+    print(f"Общая прибыль по таблице Invoice_items = {'%.2f' % (rows_1_sql[0])}\n")
 
 
-# get_employees()
+# Задача 2
 
-def get_customers(state_name=None, city_name=None) -> None:
-    query_sql = '''
-        SELECT FirstName
-              ,City 
-              ,State
-          FROM customers
-        '''
-    filter_query = 'WHERE '
-    if city_name and state_name:
-        filter_query += f"City = '{city_name}' and State = '{state_name}'"
-        query_sql += filter_query
-    if city_name and not state_name:
-        filter_query += f"City = '{city_name}'"
-        query_sql += filter_query
-    if state_name and not city_name:
-        filter_query += f"State = '{state_name}'"
-        query_sql += filter_query
-    return unwrapper(execute_query(query_sql))
+def counting_duplicates():
+    request_2 = """
+      SELECT FirstName
+        FROM customers;
+    """
+
+    rows_2 = execute_query(request_2)
+    list_out = Counter(item[0] for item in rows_2)
+
+    print("#2 task")
+    for key, value in list_out.items():
+        if value > 1:
+            print(f"{key} {value}")
 
 
-# get_customers(city_name='Budapest')
+def counting_duplicates_sql():
+    request_2_sql = """
+      SELECT FirstName, COUNT(FirstName)
+        FROM customers
+        GROUP BY FirstName
+        HAVING COUNT(FirstName) > 1;     
+    """
+
+    rows_2_sql = execute_query(request_2_sql)
+
+    print("\n#2 task (SQL)")
+    for item in rows_2_sql:
+        print(f"{item[0]} {item[1]}")
 
 
-def get_unique_customers_by_python() -> Set:
-    query_sql = f'''
-        SELECT FirstName
-          FROM customers
-    '''
-    records = execute_query(query_sql)
-    result = set()
-    for record in records:
-        result.add(record[0])
-    return result
-
-
-print(len(get_unique_customers_by_python()))
-
-
-def get_unique_customers_by_sql() -> List:
-    query_sql = f'''
-            SELECT distinct FirstName
-              FROM customers
-    '''
-    records = execute_query(query_sql)
-    result = []
-    for record in records:
-        result.append(record[0])
-    return result
+calculation_sum()
+calculation_sum_sql()
+counting_duplicates()
+counting_duplicates_sql()
