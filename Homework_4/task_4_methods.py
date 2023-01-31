@@ -17,20 +17,15 @@ def all_reqested():
         return books_representation
 
 
-
-
 @app.route("/books", methods=["GET", "POST"])
 def books():
-
-        try:
-            if request.method == "GET":
-
-                return all_reqested()
-
-            elif request.method == "POST":
-                return all_reqested()
-        finally:
-            pass
+    try:
+        if request.method == "GET":
+            return all_reqested()
+        elif request.method == "POST":
+            return all_reqested()
+    finally:
+        pass
 
 
 if __name__ == "__main__":
