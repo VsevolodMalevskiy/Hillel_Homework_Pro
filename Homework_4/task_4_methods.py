@@ -5,30 +5,32 @@ from serializers import serialize_book
 app = Flask(__name__)
 
 
+def all_reqested():
+    with sq.connect("books.db") as data_base:
+        cur = data_base.cursor()
+        response = cur.execute("select * from books").fetchall()
+        data_base.commit()
+        books_representation = []
+        for item in response:
+            books_representation.append(serialize_book(item))
+        cur.close()
+        return books_representation
+
+
+
+
 @app.route("/books", methods=["GET", "POST"])
 def books():
-    with sq.connect("books.db") as data_base:
+
         try:
             if request.method == "GET":
-                cur = data_base.cursor()
-                response = cur.execute("select * from books").fetchall()
-                data_base.commit()
-                books_representation = []
-                for item in response:
-                    books_representation.append(serialize_book(item))
-                return books_representation
+
+                return all_reqested()
 
             elif request.method == "POST":
-                cur = data_base.cursor()
-                response = cur.execute("select * from books").fetchall()
-                data_base.commit()
-                books_representation = []
-                for item in response:
-                    books_representation.append(serialize_book(item))
-                return books_representation
+                return all_reqested()
         finally:
-            cur.close()
-
+            pass
 
 
 if __name__ == "__main__":
