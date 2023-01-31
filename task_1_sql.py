@@ -3,6 +3,7 @@ import sqlite3
 from collections import Counter
 
 
+
 def execute_query(query_sql: str):
     '''
     Функция для выполнения запроса
