@@ -5,7 +5,7 @@ from serializers import serialize_book
 app = Flask(__name__)
 
 
-def all_reqested():
+def all_request():
     with sq.connect("books.db") as data_base:
         cur = data_base.cursor()
         response = cur.execute("select * from books").fetchall()
@@ -21,9 +21,9 @@ def all_reqested():
 def books():
     try:
         if request.method == "GET":
-            return all_reqested()
+            return all_request()
         elif request.method == "POST":
-            return all_reqested()
+            return all_request()
     finally:
         pass
 
