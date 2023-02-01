@@ -56,6 +56,52 @@ def delete_book(book_id):
     return "", 204
 
 
+def rename_book(book_id):
+    body = request.json
+    book_name = body["name"]
+    if book_name == "":
+        return {"error": "Book name cannot be empty"}, 400
+
+    with sq.connect("books.db") as data_base:
+        cur = data_base.cursor()
+        # Запрос на все находящиеся в БД книги для проверки на совпадение
+        match_check = cur.execute(f"select Name from books").fetchall()
+        # Поиск книги по id
+        response = cur.execute(f"select * from books where books_id={book_id}").fetchone()
+        data_base.commit()
+    if response is None:
+        return {"error": "Book not found"}, 404
+    # проверка на отсутствия книги в БД
+    else:
+        if (book_name,) in match_check:
+            return {"error": "a book with that name exists"}
+        else:
+            cur.execute(f"UPDATE books set Name = '{book_name}' WHERE books_id = {book_id}")
+            data_base.commit()
+            return {"good": f"{match_check}"}
+
+# Вариант 2. Создание БД с уникальными занчениями книг (creation_db_unique.db)
+# def rename_book(book_id):
+#     body = request.json
+#     book_name = body["name"]
+#     if book_name == "":
+#         return {"error": "Book name cannot be empty"}, 400
+#
+#     with sq.connect("books.db") as data_base:
+#         cur = data_base.cursor()
+#         response = cur.execute(f"select * from books where books_id={book_id}").fetchone()
+#         data_base.commit()
+#     if response is None:
+#         return {"error": "Book not found"}, 404
+#     else:
+#         try:
+#             cur.execute(f"UPDATE books set Name = '{book_name}' WHERE books_id = {book_id}")
+#             data_base.commit()
+#             return {"good": "The book has been updated"}
+#         except:
+#             return {"error": "There is a book with the same name in the database"}
+
+
 @app.route("/books", methods=["GET", "POST"])
 def books():
     try:
@@ -72,10 +118,10 @@ def book(book_id):
 
     if request.method == "GET":
         return get_book(book_id)
-    # elif request.method == "PUT":
-    #     return "book update will be there"
-    # elif request.method == "PATCH":
-    #     return "book partial update will be there"
+    elif request.method == "PUT":
+        return rename_book(book_id)
+    elif request.method == "PATCH":
+        return "book partial update will be there"
     elif request.method == "DELETE":
         return delete_book(book_id)
 
