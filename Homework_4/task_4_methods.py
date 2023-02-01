@@ -78,7 +78,7 @@ def rename_book(book_id):
         else:
             cur.execute(f"UPDATE books set Name = '{book_name}' WHERE books_id = {book_id}")
             data_base.commit()
-            return {"good": f"{match_check}"}
+            return {"good": "The book has been updated"}
 
 # Вариант 2. Создание БД с уникальными занчениями книг (creation_db_unique.db)
 # def rename_book(book_id):
